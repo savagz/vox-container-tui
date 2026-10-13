@@ -14,7 +14,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let lang = app.lang;
     let accent = theme.tab_accent(3);
 
-    let block = panel::block(theme, "network", accent, false).title_bottom(panel::readout(
+    let block = panel::block(theme, super::Tab::Network.title(app.lang), accent, false).title_bottom(panel::readout(
         theme,
         &i18n::t(lang, Key::NetworkDetailTemplate).replacen("{}", &app.inventory.networks.len().to_string(), 1),
         theme.fg_muted,

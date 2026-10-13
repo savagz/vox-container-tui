@@ -494,6 +494,7 @@ impl App {
             .filter(|i| {
                 i.name.to_lowercase().contains(&needle)
                     || i.status.label().to_lowercase().contains(&needle)
+                    || i.status.localized(self.lang).to_lowercase().contains(&needle)
             })
             .collect()
     }
@@ -617,10 +618,10 @@ impl App {
             Some(AppAction::ConfigKeys) if self.active_tab == Tab::Network => self.open_network_config_keys_form(),
             Some(AppAction::Info) if self.active_tab == Tab::Network => self.open_network_info(),
             Some(AppAction::Operations) if self.active_tab == Tab::Logs => {
-                self.open_info("operation list".to_string(), PendingAction::FetchOperations);
+                self.open_info(i18n::t(self.lang, Key::InfoTitleOperations).to_string(), PendingAction::FetchOperations);
             }
             Some(AppAction::Warnings) if self.active_tab == Tab::Logs => {
-                self.open_info("warning list".to_string(), PendingAction::FetchWarnings);
+                self.open_info(i18n::t(self.lang, Key::InfoTitleWarnings).to_string(), PendingAction::FetchWarnings);
             }
             _ => {}
         }

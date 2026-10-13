@@ -76,8 +76,8 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
             format!("{}  ", daemon_label(app)),
             theme.style_for(daemon_status),
         ),
-        Span::styled(format!("{running} UP "), theme.style_for(Status::Ok)),
-        Span::styled(format!("{stopped} DOWN "), theme.label_style()),
+        Span::styled(format!("{running} {} ", i18n::t(app.lang, Key::HeaderUp)), theme.style_for(Status::Ok)),
+        Span::styled(format!("{stopped} {} ", i18n::t(app.lang, Key::HeaderDown)), theme.label_style()),
         if errored > 0 {
             Span::styled(format!("{errored} ERR  "), theme.style_for(Status::Error))
         } else {

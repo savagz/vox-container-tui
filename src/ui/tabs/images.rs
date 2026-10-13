@@ -15,7 +15,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let lang = app.lang;
     let accent = theme.tab_accent(5);
 
-    let block = panel::block(theme, "images", accent, false).title_bottom(panel::readout(
+    let block = panel::block(theme, super::Tab::Images.title(app.lang), accent, false).title_bottom(panel::readout(
         theme,
         &i18n::t(lang, Key::ImagesDetailTemplate).replacen("{}", &app.inventory.images.len().to_string(), 1),
         theme.fg_muted,

@@ -9,6 +9,8 @@ pub mod snapshots;
 pub mod storage;
 pub mod syscheck;
 
+use crate::i18n::{self, Key, Lang};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tab {
     #[default]
@@ -38,19 +40,20 @@ impl Tab {
         Tab::SystemCheck,
     ];
 
-    pub fn title(&self) -> &'static str {
-        match self {
-            Tab::Overview => "Overview",
-            Tab::Containers => "Containers",
-            Tab::Resources => "Resources",
-            Tab::Network => "Network",
-            Tab::Snapshots => "Snapshots",
-            Tab::Images => "Images",
-            Tab::Profiles => "Profiles",
-            Tab::Storage => "Storage",
-            Tab::Logs => "Logs",
-            Tab::SystemCheck => "System Check",
-        }
+    pub fn title(&self, lang: Lang) -> &'static str {
+        let key = match self {
+            Tab::Overview => Key::TabOverview,
+            Tab::Containers => Key::TabContainers,
+            Tab::Resources => Key::TabResources,
+            Tab::Network => Key::TabNetwork,
+            Tab::Snapshots => Key::TabSnapshots,
+            Tab::Images => Key::TabImages,
+            Tab::Profiles => Key::TabProfiles,
+            Tab::Storage => Key::TabStorage,
+            Tab::Logs => Key::TabLogs,
+            Tab::SystemCheck => Key::TabSystemCheck,
+        };
+        i18n::t(lang, key)
     }
 
     pub fn index(&self) -> usize {

@@ -361,10 +361,10 @@ async fn execute_action(
                 ActionOutcome::Info { name: format!("{pool}/{volume}"), info }
             }
             PendingAction::FetchOperations => {
-                ActionOutcome::Info { name: "operation list".to_string(), info: fixtures::operation_list() }
+                ActionOutcome::Info { name: i18n::t(lang, Key::InfoTitleOperations).to_string(), info: fixtures::operation_list() }
             }
             PendingAction::FetchWarnings => {
-                ActionOutcome::Info { name: "warning list".to_string(), info: fixtures::warning_list() }
+                ActionOutcome::Info { name: i18n::t(lang, Key::InfoTitleWarnings).to_string(), info: fixtures::warning_list() }
             }
             PendingAction::FetchRemoteImages => ActionOutcome::RemoteCatalog(fixtures::remote_images()),
             other => ActionOutcome::Done(tpl1(lang, Key::MainFixturesSimulatedTemplate, describe(lang, &other))),
@@ -694,11 +694,11 @@ async fn execute_action(
         }
         PendingAction::FetchOperations => {
             let info = query::operation_list(cli, timeout_secs).await.map_err(|e| e.localized(lang))?;
-            Ok(ActionOutcome::Info { name: "operation list".to_string(), info })
+            Ok(ActionOutcome::Info { name: i18n::t(lang, Key::InfoTitleOperations).to_string(), info })
         }
         PendingAction::FetchWarnings => {
             let info = query::warning_list(cli, timeout_secs).await.map_err(|e| e.localized(lang))?;
-            Ok(ActionOutcome::Info { name: "warning list".to_string(), info })
+            Ok(ActionOutcome::Info { name: i18n::t(lang, Key::InfoTitleWarnings).to_string(), info })
         }
         PendingAction::RunFix(_) | PendingAction::Console(_) => {
             Err(i18n::t(lang, Key::MainDescribeAction).to_string())

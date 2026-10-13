@@ -119,6 +119,20 @@ impl InstanceStatus {
         }
     }
 
+    /// Texto del estado en el idioma de la interfaz (columna ESTADO).
+    pub fn localized(&self, lang: crate::i18n::Lang) -> &'static str {
+        use crate::i18n::{Key, t};
+        t(lang, match self {
+            Self::Running => Key::StatusRunning,
+            Self::Stopped => Key::StatusStopped,
+            Self::Frozen => Key::StatusFrozen,
+            Self::Starting => Key::StatusStarting,
+            Self::Stopping => Key::StatusStopping,
+            Self::Error => Key::StatusError,
+            Self::Unknown => Key::StatusUnknown,
+        })
+    }
+
     pub fn label(&self) -> &'static str {
         match self {
             Self::Running => "RUNNING",

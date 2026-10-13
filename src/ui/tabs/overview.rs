@@ -30,7 +30,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         frame,
         host_cols[0],
         theme,
-        "cpu host",
+        i18n::t(app.lang, Key::OverviewGaugeCpu),
         "",
         app.host.cpu_pct,
     );
@@ -38,7 +38,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         frame,
         host_cols[1],
         theme,
-        "ram host",
+        i18n::t(app.lang, Key::OverviewGaugeRam),
         &format!("{:.1}/{:.1} GiB", app.host.mem_used_gb, app.host.mem_total_gb),
         app.host.mem_pct,
     );
@@ -46,7 +46,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
         frame,
         host_cols[2],
         theme,
-        "disco host",
+        i18n::t(app.lang, Key::OverviewGaugeDisk),
         &format!("{:.1}/{:.1} GiB", app.host.disk_used_gb, app.host.disk_total_gb),
         app.host.disk_pct,
     );
@@ -70,10 +70,10 @@ fn render_totals(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::styl
         .constraints([Constraint::Ratio(1, 4); 4])
         .split(inner);
 
-    stat(frame, cols[0], theme, "RUNNING", running, theme.ok);
-    stat(frame, cols[1], theme, "STOPPED", stopped, theme.fg_muted);
-    stat(frame, cols[2], theme, "FROZEN", frozen, theme.info);
-    stat(frame, cols[3], theme, "ERROR", errored, theme.error);
+    stat(frame, cols[0], theme, i18n::t(app.lang, Key::StatRunning), running, theme.ok);
+    stat(frame, cols[1], theme, i18n::t(app.lang, Key::StatStopped), stopped, theme.fg_muted);
+    stat(frame, cols[2], theme, i18n::t(app.lang, Key::StatFrozen), frozen, theme.info);
+    stat(frame, cols[3], theme, i18n::t(app.lang, Key::StatError), errored, theme.error);
 }
 
 fn stat(
@@ -130,10 +130,10 @@ fn render_inventory(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::s
     frame.render_widget(block, area);
 
     let server_line = match &app.inventory.server {
-        Some(s) => format!(
-            "api {} · kernel {} · storage {}",
-            s.api_version, s.environment.kernel, s.environment.storage
-        ),
+        Some(s) => i18n::t(lang, Key::OverviewServerTemplate)
+            .replacen("{}", &s.api_version, 1)
+            .replacen("{}", &s.environment.kernel, 1)
+            .replacen("{}", &s.environment.storage, 1),
         None => i18n::t(lang, Key::OverviewNoServerData).to_string(),
     };
 
@@ -143,19 +143,19 @@ fn render_inventory(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::s
             Span::styled(server_line, theme.value_style()),
         ]),
         Line::from(vec![
-            Span::styled("STORAGE    ", theme.label_style()),
+            Span::styled(i18n::t(lang, Key::OverviewLabelStorage), theme.label_style()),
             Span::styled(storage_summary(app), theme.readout_style()),
         ]),
         Line::from(vec![
             Span::styled(i18n::t(lang, Key::OverviewLabelNetworks), theme.label_style()),
-            Span::styled(format!("{} definida(s)", app.inventory.networks.len()), theme.readout_style()),
+            Span::styled(i18n::t(lang, Key::OverviewNetworksCountTemplate).replacen("{}", &app.inventory.networks.len().to_string(), 1), theme.readout_style()),
         ]),
         Line::from(vec![
             Span::styled(i18n::t(lang, Key::OverviewLabelImages), theme.label_style()),
-            Span::styled(format!("{} local(es)", app.inventory.images.len()), theme.readout_style()),
+            Span::styled(i18n::t(lang, Key::OverviewImagesCountTemplate).replacen("{}", &app.inventory.images.len().to_string(), 1), theme.readout_style()),
         ]),
         Line::from(vec![
-            Span::styled("UPTIME     ", theme.label_style()),
+            Span::styled(i18n::t(lang, Key::OverviewLabelUptime), theme.label_style()),
             Span::styled(format_uptime(app.host.uptime_secs), theme.readout_style()),
         ]),
         Line::from(vec![

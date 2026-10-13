@@ -28,7 +28,7 @@ fn render_pools(frame: &mut Frame, area: Rect, app: &App) {
     let detail =
         i18n::t(lang, Key::StorageDetailTemplate).replacen("{}", &app.inventory.pools.len().to_string(), 1);
     let block =
-        panel::block(theme, "storage", accent, false).title_bottom(panel::readout(theme, &detail, theme.fg_muted));
+        panel::block(theme, super::Tab::Storage.title(app.lang), accent, false).title_bottom(panel::readout(theme, &detail, theme.fg_muted));
 
     let header = Row::new([i18n::t(lang, Key::ColName), i18n::t(lang, Key::ColDriver), i18n::t(lang, Key::NetworkColUsedBy)])
         .style(theme.table_header_style());
@@ -62,7 +62,7 @@ fn render_volumes(frame: &mut Frame, area: Rect, app: &App, pool: &str) {
         .replacen("{}", &volumes.len().to_string(), 1)
         .replacen("{}", pool, 1);
     let block =
-        panel::block(theme, "storage", accent, false).title_bottom(panel::readout(theme, &detail, theme.fg_muted));
+        panel::block(theme, super::Tab::Storage.title(app.lang), accent, false).title_bottom(panel::readout(theme, &detail, theme.fg_muted));
 
     let header = Row::new([
         i18n::t(lang, Key::ColName),

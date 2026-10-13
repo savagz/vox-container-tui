@@ -19,7 +19,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let theme = &app.theme;
     let accent = theme.tab_accent(2);
 
-    let block = panel::block(theme, "resources", accent, false);
+    let block = panel::block(theme, super::Tab::Resources.title(app.lang), accent, false);
     let inner = block.inner(area);
     frame.render_widget(block, area);
 

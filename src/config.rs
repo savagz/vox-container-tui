@@ -66,16 +66,17 @@ impl Config {
     }
 
     pub fn save(&self) -> Result<PathBuf> {
-        let path = Self::write_path()?;
+        let lang = self.ui.language;
+        let path = Self::write_path(lang)?;
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)
-                .wrap_err_with(|| format!("no se pudo crear {}", parent.display()))?;
+                .wrap_err_with(|| i18n::t(lang, Key::ConfigErrCreateDirTemplate).replacen("{}", &parent.display().to_string(), 1))?;
         }
 
-        let body = toml::to_string_pretty(self).wrap_err("no se pudo serializar la config")?;
+        let body = toml::to_string_pretty(self).wrap_err(i18n::t(lang, Key::ConfigErrSerialize))?;
         let contents = format!("# Generado por voxcontainer-tui.\n\n{body}");
         std::fs::write(&path, contents)
-            .wrap_err_with(|| format!("no se pudo escribir {}", path.display()))?;
+            .wrap_err_with(|| i18n::t(lang, Key::ConfigErrWriteTemplate).replacen("{}", &path.display().to_string(), 1))?;
         Ok(path)
     }
 
@@ -90,12 +91,12 @@ impl Config {
         user.exists().then_some(user)
     }
 
-    pub fn write_path() -> Result<PathBuf> {
+    pub fn write_path(lang: Lang) -> Result<PathBuf> {
         if let Some(path) = Self::existing_path() {
             return Ok(path);
         }
         user_config_path()
-            .ok_or_else(|| eyre!("no se pudo resolver el directorio de config del usuario"))
+            .ok_or_else(|| eyre!(i18n::t(lang, Key::ConfigErrNoUserDir)))
     }
 }
 

@@ -15,7 +15,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let accent = theme.tab_accent(4);
 
     let instance_name = app.selected_instance_name.clone().unwrap_or_else(|| "—".to_string());
-    let block = panel::block(theme, "snapshots", accent, false).title_bottom(panel::readout(
+    let block = panel::block(theme, super::Tab::Snapshots.title(app.lang), accent, false).title_bottom(panel::readout(
         theme,
         &i18n::t(lang, Key::SnapshotsInstanceTemplate).replacen("{}", &instance_name, 1),
         theme.fg_muted,

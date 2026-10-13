@@ -54,7 +54,7 @@ fn render_table(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::style
             .replacen("{}", &inst.profiles.join(","), 1),
         None => i18n::t(app.lang, Key::ContainersDetailTemplate).replacen("{}", &instances.len().to_string(), 1),
     };
-    let block = panel::block(theme, "containers", accent, false).title_bottom(panel::readout(
+    let block = panel::block(theme, super::Tab::Containers.title(app.lang), accent, false).title_bottom(panel::readout(
         theme,
         &detail,
         theme.fg_muted,
@@ -90,7 +90,7 @@ fn render_table(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::style
         let row = Row::new([
             Span::styled(led, theme.style_for(status)),
             Span::styled(inst.name.clone(), theme.style_for_bold()),
-            Span::styled(inst.status.label(), theme.style_for(status)),
+            Span::styled(inst.status.localized(app.lang), theme.style_for(status)),
             Span::styled(inst.kind.clone(), theme.label_style()),
             Span::styled(ip, theme.readout_style()),
             Span::styled(cpu, theme.readout_style()),
@@ -108,7 +108,7 @@ fn render_table(frame: &mut Frame, area: Rect, app: &App, accent: ratatui::style
     let widths = [
         Constraint::Length(1),
         Constraint::Percentage(20),
-        Constraint::Length(9),
+        Constraint::Length(11),
         Constraint::Length(10),
         Constraint::Percentage(18),
         Constraint::Length(6),

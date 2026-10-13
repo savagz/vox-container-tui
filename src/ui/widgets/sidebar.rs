@@ -90,7 +90,7 @@ fn render_button(frame: &mut Frame, area: Rect, tab: Tab, app: &App) {
 
     let line = Line::from(vec![
         Span::styled(format!(" {glyph} "), theme.style_for_color(led_color)),
-        Span::styled(tab.title().to_uppercase(), label_style),
+        Span::styled(tab.title(app.lang).to_uppercase(), label_style),
     ]);
 
     frame.render_widget(Paragraph::new(line).block(block), area);

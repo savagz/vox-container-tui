@@ -14,7 +14,7 @@ pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let lang = app.lang;
     let accent = theme.tab_accent(6);
 
-    let block = panel::block(theme, "profiles", accent, false).title_bottom(panel::readout(
+    let block = panel::block(theme, super::Tab::Profiles.title(app.lang), accent, false).title_bottom(panel::readout(
         theme,
         &i18n::t(lang, Key::ProfilesDetailTemplate).replacen("{}", &app.inventory.profiles.len().to_string(), 1),
         theme.fg_muted,

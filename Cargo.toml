@@ -1,6 +1,6 @@
 [package]
 name = "voxcontainer-tui"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 description = "TUI para administrar instancias LXD/Incus"
 repository = "https://github.com/savagz/vox-container-tui"

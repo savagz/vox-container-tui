@@ -1,0 +1,13 @@
+# Copiá este archivo a config/voxcontainer.toml (modo dev) o dejá que la TUI
+# escriba el suyo en el directorio de config del usuario al guardar desde el
+# overlay de configuración (`c`).
+
+[poll]
+instances_secs = 2      # refresco de la tabla de CONTAINERS
+resources_secs = 2      # reservado: hoy comparte intervalo con instances_secs
+inventory_secs = 30     # refresco de redes/imágenes/storage pools
+
+[ui]
+tick_rate_ms = 250
+command_timeout_secs = 10   # cuánto espera la TUI antes de dar por colgado un comando lxc/incus
+language = "es"             # "es" o "en" — también editable desde el overlay de configuración (`c`)

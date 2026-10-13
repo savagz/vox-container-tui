@@ -49,14 +49,15 @@ impl PackageManager {
     pub fn install_command(&self) -> Vec<String> {
         let pkg = self.package().to_string();
         let base: Vec<String> = match self {
-            // Debian 12 no tiene `incus` pero sí `lxd`; Ubuntu tiene ambos. Se
-            // elige según lo que ofrezca el repo, y `iptables` va aparte porque
-            // el bridge de LXD lo necesita y el paquete no lo arrastra.
+            // LXD en ambos. En Ubuntu el paquete apt `lxd` es sólo el
+            // `lxd-installer`, así que se instala el snap; en Debian sí existe
+            // el paquete `lxd`, y `iptables` va aparte porque el bridge lo
+            // necesita y el paquete no lo arrastra.
             PackageManager::Apt => vec![
                 "sh".into(),
                 "-c".into(),
-                "apt-get update && apt-get install -y \
-                 $(apt-cache show incus >/dev/null 2>&1 && echo incus || echo lxd) iptables"
+                ". /etc/os-release; if [ \"$ID\" = ubuntu ]; then snap install lxd; \
+                 else apt-get update && apt-get install -y lxd iptables; fi"
                     .into(),
             ],
             PackageManager::Dnf => vec!["dnf".into(), "install".into(), "-y".into(), pkg],
@@ -420,10 +421,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn apt_elige_incus_o_lxd_e_instala_iptables() {
+    fn apt_instala_lxd_por_snap_en_ubuntu_y_por_apt_en_debian() {
         let cmd = PackageManager::Apt.install_command();
-        let script = cmd.iter().find(|a| a.contains("apt-get")).expect("script de apt");
-        assert!(script.contains("apt-get install -y $(apt-cache show incus"));
-        assert!(script.contains("echo incus || echo lxd) iptables"));
+        let script = cmd.iter().find(|a| a.contains("os-release")).expect("script de apt");
+        assert!(script.contains(r#"[ "$ID" = ubuntu ]; then snap install lxd"#));
+        assert!(script.contains("apt-get install -y lxd iptables"));
+        assert!(!script.contains("incus"));
     }
 }

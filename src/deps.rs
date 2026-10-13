@@ -49,10 +49,15 @@ impl PackageManager {
     pub fn install_command(&self) -> Vec<String> {
         let pkg = self.package().to_string();
         let base: Vec<String> = match self {
+            // Debian 12 no tiene `incus` pero sí `lxd`; Ubuntu tiene ambos. Se
+            // elige según lo que ofrezca el repo, y `iptables` va aparte porque
+            // el bridge de LXD lo necesita y el paquete no lo arrastra.
             PackageManager::Apt => vec![
                 "sh".into(),
                 "-c".into(),
-                format!("apt-get update && apt-get install -y {pkg}"),
+                "apt-get update && apt-get install -y \
+                 $(apt-cache show incus >/dev/null 2>&1 && echo incus || echo lxd) iptables"
+                    .into(),
             ],
             PackageManager::Dnf => vec!["dnf".into(), "install".into(), "-y".into(), pkg],
             PackageManager::Yum => vec!["yum".into(), "install".into(), "-y".into(), pkg],
@@ -408,4 +413,17 @@ fn which(binary: &str) -> bool {
 fn is_root() -> bool {
     // SAFETY: `geteuid` no toma punteros ni puede fallar.
     unsafe { libc::geteuid() == 0 }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn apt_elige_incus_o_lxd_e_instala_iptables() {
+        let cmd = PackageManager::Apt.install_command();
+        let script = cmd.iter().find(|a| a.contains("apt-get")).expect("script de apt");
+        assert!(script.contains("apt-get install -y $(apt-cache show incus"));
+        assert!(script.contains("echo incus || echo lxd) iptables"));
+    }
 }

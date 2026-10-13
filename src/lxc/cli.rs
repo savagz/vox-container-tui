@@ -25,7 +25,10 @@ impl Cli {
     pub fn service_name(&self) -> &'static str {
         match self {
             Cli::Incus => "incus",
-            Cli::Lxc => "snap.lxd.daemon",
+            // LXD por snap corre como `snap.lxd.daemon`; el paquete de Debian
+            // (`apt install lxd`) lo registra como `lxd`.
+            Cli::Lxc if std::path::Path::new("/snap/bin/lxd").exists() => "snap.lxd.daemon",
+            Cli::Lxc => "lxd",
         }
     }
 
@@ -98,7 +101,34 @@ impl LxcError {
 
 /// Detecta el binario disponible, priorizando `incus` sobre `lxc` (LXD).
 pub fn detect() -> Option<Cli> {
-    [Cli::Incus, Cli::Lxc].into_iter().find(|c| which(c.binary()))
+    [Cli::Incus, Cli::Lxc]
+        .into_iter()
+        .find(|c| which(c.binary()) && !is_installer_stub(c.binary()))
+}
+
+/// Ubuntu trae `/usr/sbin/lxc` como un script de `lxd-installer` que instala el
+/// snap de LXD la primera vez que se ejecuta (y su salida no es JSON). Mientras
+/// el snap no esté, eso no es un cliente real y no hay que invocarlo.
+fn is_installer_stub(binary: &str) -> bool {
+    let Some(path) = find_in_path(binary) else {
+        return false;
+    };
+    let Ok(contents) = std::fs::read(&path) else {
+        return false;
+    };
+    is_installer_stub_contents(&contents)
+        && !std::path::Path::new("/snap/bin").join(binary).exists()
+}
+
+fn is_installer_stub_contents(contents: &[u8]) -> bool {
+    contents.len() < 4096 && String::from_utf8_lossy(contents).contains("lxd-installer")
+}
+
+fn find_in_path(binary: &str) -> Option<std::path::PathBuf> {
+    let path = std::env::var_os("PATH")?;
+    std::env::split_paths(&path)
+        .map(|dir| dir.join(binary))
+        .find(|candidate| candidate.is_file())
 }
 
 impl Cli {
@@ -239,5 +269,13 @@ mod tests {
     fn init_usa_el_binario_del_daemon_segun_el_backend() {
         assert_eq!(Cli::Incus.init_args(), ["incus", "admin", "init", "--auto"]);
         assert_eq!(Cli::Lxc.init_args(), ["lxd", "init", "--auto"]);
+    }
+
+    #[test]
+    fn reconoce_el_stub_de_lxd_installer() {
+        let stub = b"#!/bin/sh\nSNAP_BIN=\"/snap/bin/lxc\"\n# /run/lxd-installer.socket\nexec \"$SNAP_BIN\" \"$@\"\n";
+        assert!(is_installer_stub_contents(stub));
+        assert!(!is_installer_stub_contents(b"\x7fELF binario real"));
+        assert!(!is_installer_stub_contents(&vec![b'a'; 8192]));
     }
 }

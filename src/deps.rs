@@ -283,13 +283,10 @@ pub fn probe(lang: Lang) -> DepReport {
             }
             SyncOutcome::Ok(_) => CheckState::Missing {
                 detail: t(Key::DepInitMissing).to_string(),
-                fix: vec![
-                    "sudo".into(),
-                    c.binary().to_string(),
-                    "admin".into(),
-                    "init".into(),
-                    "--auto".into(),
-                ],
+                fix: std::iter::once("sudo")
+                    .chain(c.init_args().iter().copied())
+                    .map(String::from)
+                    .collect(),
             },
             _ => CheckState::Unknown(t(Key::DepUnknownGeneric).to_string()),
         },
@@ -319,7 +316,7 @@ pub fn probe(lang: Lang) -> DepReport {
                             c.binary().to_string(),
                             "network".into(),
                             "create".into(),
-                            "incusbr0".into(),
+                            c.default_bridge().to_string(),
                         ],
                     }
                 }

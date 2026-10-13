@@ -35,6 +35,24 @@ impl Cli {
             Cli::Lxc => "lxd",
         }
     }
+
+    /// Comando que inicializa el daemon con valores por defecto. `lxc` es sólo
+    /// el cliente de LXD: la inicialización la hace el binario `lxd`, mientras
+    /// que Incus la expone como `incus admin init`.
+    pub fn init_args(&self) -> &'static [&'static str] {
+        match self {
+            Cli::Incus => &["incus", "admin", "init", "--auto"],
+            Cli::Lxc => &["lxd", "init", "--auto"],
+        }
+    }
+
+    /// Nombre convencional del bridge gestionado que crea `init --auto`.
+    pub fn default_bridge(&self) -> &'static str {
+        match self {
+            Cli::Incus => "incusbr0",
+            Cli::Lxc => "lxdbr0",
+        }
+    }
 }
 
 #[derive(Debug, Error, Clone)]
@@ -210,4 +228,16 @@ pub async fn run_json<T: serde::de::DeserializeOwned>(
 pub async fn run_ok(cli: Cli, args: &[&str], timeout_secs: u64) -> Result<(), LxcError> {
     run(cli, args, timeout_secs).await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `lxc admin init` no existe: LXD se inicializa con el binario `lxd`.
+    #[test]
+    fn init_usa_el_binario_del_daemon_segun_el_backend() {
+        assert_eq!(Cli::Incus.init_args(), ["incus", "admin", "init", "--auto"]);
+        assert_eq!(Cli::Lxc.init_args(), ["lxd", "init", "--auto"]);
+    }
 }

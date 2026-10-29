@@ -31,18 +31,26 @@ Prebuilt binaries are published for Linux x86_64 as static (musl) builds that ru
 curl -fsSL https://raw.githubusercontent.com/savagz/vox-container-tui/main/install.sh | sh
 ```
 
-The script downloads the latest release, verifies its SHA-256 checksum and installs `voxcontainer-tui` into `/usr/local/bin` (using `sudo` only if needed). Options can be passed after `sh -s --`:
+Without `curl`, use `wget`:
 
 ```sh
-# Pin a version
+wget -qO- https://raw.githubusercontent.com/savagz/vox-container-tui/main/install.sh | sh
+```
+
+The script downloads the latest release, verifies its SHA-256 checksum and installs `voxcontainer-tui` into `/usr/local/bin` (using `sudo` only if needed). The latest release is resolved by following the `github.com/savagz/vox-container-tui/releases/latest` redirect rather than calling the GitHub API, so it is not subject to the API rate limit. Options can be passed after `sh -s --`:
+
+```sh
+# Pin a version ("v0.1.0" and "0.1.0" are both accepted)
 curl -fsSL https://raw.githubusercontent.com/savagz/vox-container-tui/main/install.sh | sh -s -- --version v0.1.0
 
-# Install without root
+# Install without root (the directory is created if missing)
 curl -fsSL https://raw.githubusercontent.com/savagz/vox-container-tui/main/install.sh | sh -s -- --prefix ~/.local/bin
 
-# Uninstall
+# Uninstall (pass the same --prefix used to install)
 curl -fsSL https://raw.githubusercontent.com/savagz/vox-container-tui/main/install.sh | sh -s -- --uninstall
 ```
+
+The version can also be set with the `VOXCONTAINER_VERSION` environment variable. Run with `--help` to list the options.
 
 If the repository is private, the one-liner does not work without authentication. Download the release assets manually instead.
 

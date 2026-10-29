@@ -23,7 +23,20 @@ info() { printf '%s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
 usage() {
-    sed -n '2,12p' "$0" 2>/dev/null | sed 's/^# \{0,1\}//' || true
+    # Inline text: under `curl | sh`, $0 is the shell, not this file.
+    cat <<EOF
+voxcontainer-tui installer.
+
+  curl -fsSL https://raw.githubusercontent.com/$REPO/main/install.sh | sh
+
+Options:
+  --prefix <dir>   Install directory (default /usr/local/bin)
+  --version <tag>  Version to install, e.g. v0.1.0 (default: latest)
+  --uninstall      Remove the installed binary
+  -h, --help       Show this help
+
+Environment: VOXCONTAINER_VERSION is equivalent to --version.
+EOF
 }
 
 while [ $# -gt 0 ]; do
@@ -54,6 +67,8 @@ as_root() {
 install_file() {
     # $1 source, $2 destination
     dest_dir=$(dirname "$2")
+    # Try to create the directory without root first (e.g. ~/.local/bin).
+    mkdir -p "$dest_dir" 2>/dev/null || true
     if [ -d "$dest_dir" ] && [ -w "$dest_dir" ]; then
         install -m 0755 "$1" "$2"
     else
@@ -93,11 +108,18 @@ if [ -z "$VERSION" ]; then
     [ -n "$VERSION" ] || die "could not determine the latest release"
 fi
 
+# Accept "1.2.3" as well as "v1.2.3".
+case "$VERSION" in
+    v*) ;;
+    *) VERSION="v$VERSION" ;;
+esac
+
 name="$BIN-$VERSION-x86_64-linux"
 base="https://github.com/$REPO/releases/download/$VERSION"
 
 tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT INT TERM
+trap 'rm -rf "$tmp"' EXIT
+trap 'exit 130' INT TERM
 
 info "Downloading $name.tar.gz..."
 fetch "$base/$name.tar.gz" "$tmp/$name.tar.gz" || die "could not download $base/$name.tar.gz"

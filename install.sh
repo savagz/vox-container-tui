@@ -90,10 +90,15 @@ fi
 
 if command -v curl >/dev/null 2>&1; then
     fetch() { curl -fsSL "$1" -o "$2"; }
-    fetch_stdout() { curl -fsSL "$1"; }
+    # Final URL after following redirects.
+    resolve_url() { curl -fsSLI -o /dev/null -w '%{url_effective}' "$1"; }
 elif command -v wget >/dev/null 2>&1; then
     fetch() { wget -qO "$2" "$1"; }
-    fetch_stdout() { wget -qO- "$1"; }
+    resolve_url() {
+        # wget prints "Location: <url> [following]"; keep only the URL.
+        wget -S --spider "$1" 2>&1 | tr -d '\r' \
+            | sed -n 's/^[[:space:]]*Location:[[:space:]]*\([^[:space:]]*\).*/\1/p' | tail -n 1
+    }
 else
     die "curl or wget is required"
 fi
@@ -102,10 +107,14 @@ command -v tar >/dev/null 2>&1 || die "tar is required"
 
 if [ -z "$VERSION" ]; then
     info "Looking up the latest release..."
-    VERSION=$(fetch_stdout "https://api.github.com/repos/$REPO/releases/latest" \
-        | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1) \
+    # github.com/<repo>/releases/latest redirects to .../releases/tag/<tag>;
+    # unlike the API it is not rate limited.
+    latest=$(resolve_url "https://github.com/$REPO/releases/latest") \
         || die "could not query the latest release"
-    [ -n "$VERSION" ] || die "could not determine the latest release"
+    case "$latest" in
+        */releases/tag/?*) VERSION=${latest##*/} ;;
+        *) die "could not determine the latest release" ;;
+    esac
 fi
 
 # Accept "1.2.3" as well as "v1.2.3".
